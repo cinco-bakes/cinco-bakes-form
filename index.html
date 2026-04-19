@@ -1,1 +1,633 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cinco Bakes - Cookie Order Form</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Montserrat", sans-serif; background: #c8813a; margin: 0; padding: 1.5rem; }
+.card { background: #fff; border-radius: 20px; padding: 2rem 2.5rem; max-width: 900px; width: 100%; box-shadow: 0 4px 40px rgba(60,30,10,0.08); margin: 0 auto; }
+@media (max-width: 520px) { body { background: #fff; padding: 0; margin: 0; } .card { border-radius: 0; box-shadow: none; padding: 2rem 1.5rem; width: 100%; max-width: 100%; margin: 0; } }
+.logo { text-align: center; margin-bottom: 1.5rem; }
+.logo-name { font-size: 56px; font-weight: 700; color: #442523; }
+.logo-sub { font-size: 30px; letter-spacing: 4px; color: #a07850; text-transform: uppercase; margin-top: 6px; font-weight: 500; }
+.page-indicator { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 1.5rem; }
+.step { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; border: 2px solid #e8d8c8; color: #cbb89a; background: #fff; transition: all 0.3s; }
+.step.active { background: #442523; color: #fff; border-color: #442523; }
+.step.done { background: #a07850; color: #fff; border-color: #a07850; }
+.step-line { flex: 1; max-width: 60px; height: 2px; background: #e8d8c8; transition: background 0.3s; }
+.step-line.done { background: #a07850; }
+.page { display: none; }
+.page.active { display: block; }
+.section-title { font-size: 36px; color: #2c1a0e; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1.5px solid #f0e6d8; font-weight: 600; }
+.field { margin-bottom: 1.25rem; }
+.field label { display: block; font-size: 22px; color: #a07850; margin-bottom: 6px; font-weight: 500; }
+.field input, .field select { width: 100%; padding: 22px 20px; border: 1.5px solid #e8d8c8; border-radius: 12px; font-size: 24px; font-family: "Montserrat", sans-serif; color: #2c1a0e; background: #fdf8f2; outline: none; transition: border 0.2s; appearance: none; }
+.field input:focus, .field select:focus { border-color: #a07850; background: #fff; }
+.field input.invalid { border-color: #c0502a; background: #fff8f6; }
+.field-error { display: none; font-size: 16px; color: #c0502a; margin-top: 4px; padding-left: 4px; }
+.field-error.show { display: block; }
+.cookie-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.25rem; }
+.cookie-row { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 14px; background: #fdf8f2; transition: background 0.2s; }
+.cookie-row:hover { background: #f7ede0; }
+.cookie-img { width: 70px; height: 70px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+.cookie-info { flex: 1; }
+.cookie-name { font-size: 26px; font-weight: 500; color: #2c1a0e; }
+.cookie-price { font-size: 20px; color: #a07850; margin-top: 2px; }
+.sale-old { text-decoration: line-through; color: #cbb89a; margin-right: 4px; }
+.sale-new { color: #c0502a; font-weight: 500; }
+.sale-badge { display: inline-block; font-size: 14px; background: #fde8df; color: #c0502a; border-radius: 4px; padding: 2px 8px; margin-left: 6px; font-weight: 500; vertical-align: middle; }
+.stepper { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.stepper button { width: 56px; height: 56px; border-radius: 50%; border: 1.5px solid #d4b896; background: #fff; color: #2c1a0e; font-size: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.stepper button:hover { background: #2c1a0e; color: #fff; border-color: #2c1a0e; }
+.stepper button:active { transform: scale(0.93); }
+.qty { font-size: 26px; font-weight: 500; color: #2c1a0e; min-width: 40px; text-align: center; }
+.summary { background: #2c1a0e; border-radius: 14px; padding: 1.25rem 1.5rem; margin-top: 0.5rem; }
+.summary-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.summary-label { font-size: 18px; color: #cbb89a; font-weight: 500; min-width: 140px; }
+.summary-value { font-size: 18px; color: #f0e6d8; text-align: right; flex: 1; }
+.summary-divider { border: none; border-top: 1px solid #442523; margin: 10px 0; }
+.summary-total-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+.summary-total-label { font-size: 22px; font-weight: 700; color: #fff; }
+.summary-total-value { font-size: 22px; font-weight: 700; color: #fff; }
+.summary-item { font-size: 18px; color: #f0e6d8; margin-bottom: 4px; padding-left: 8px; }
+.total-bar { display: flex; justify-content: space-between; align-items: center; background: #fdf8f2; border-radius: 14px; padding: 16px 20px; margin-bottom: 1.25rem; }
+.total-label { font-size: 22px; color: #a07850; font-weight: 500; }
+.total-amount { font-size: 32px; font-weight: 700; color: #442523; }
+.item-count { font-size: 16px; color: #cbb89a; margin-top: 2px; }
+.fee-note { font-size: 16px; color: #a07850; margin-top: 6px; padding-left: 4px; }
+.fee-display { margin-bottom: 1.25rem; padding: 14px 20px; background: #fdf8f2; border-radius: 12px; }
+.fee-display-label { font-size: 20px; color: #a07850; font-weight: 500; }
+.fee-display-amount { font-size: 22px; font-weight: 700; color: #442523; }
+.instagram-note { background: #fdf8f2; border-radius: 14px; padding: 1.25rem 1.5rem; margin-top: 1.25rem; text-align: center; border: 1.5px solid #e8d8c8; }
+.instagram-note-title { font-size: 18px; font-weight: 700; color: #442523; margin-bottom: 6px; }
+.instagram-note-text { font-size: 16px; color: #a07850; line-height: 1.6; }
+.instagram-note-link { color: #c0502a; font-weight: 600; text-decoration: none; }
+.instagram-note-link:hover { text-decoration: underline; }
+button.primary { width: 100%; padding: 20px; background: #c0502a; color: #fff; border: none; border-radius: 14px; font-size: 24px; font-family: "Montserrat", sans-serif; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 1.25rem; }
+button.primary:hover { background: #a03820; }
+button.primary:disabled { background: #cbb89a; cursor: not-allowed; }
+button.secondary { width: 100%; padding: 16px; background: transparent; color: #a07850; border: 1.5px solid #e8d8c8; border-radius: 14px; font-size: 20px; font-family: "Montserrat", sans-serif; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem; }
+button.secondary:hover { background: #fdf8f2; border-color: #a07850; }
+.gcash-note { font-size: 18px; color: #a07850; text-align: center; margin-top: 1rem; line-height: 1.6; }
+.gcash-amount { font-size: 28px; font-weight: 700; color: #442523; text-align: center; margin: 1rem 0 0.5rem; }
+.msg { display: none; padding: 14px 18px; border-radius: 12px; font-size: 18px; margin-top: 1rem; text-align: center; }
+.msg.success { background: #eaf7ec; color: #2e7d32; }
+.msg.error { background: #fff3f0; color: #c0502a; }
+.loading-overlay { display: none; position: fixed; inset: 0; background: rgba(68,37,35,0.5); z-index: 999; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; }
+.loading-overlay.active { display: flex; }
+.loading-spinner { width: 56px; height: 56px; border: 5px solid #f0e6d8; border-top-color: #c0502a; border-radius: 50%; animation: spin 0.8s linear infinite; }
+.loading-text { color: #fff; font-size: 20px; font-weight: 600; font-family: "Montserrat", sans-serif; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Loading menu...</div>
+</div>
+
+<div class="card">
+
+  <div class="logo" id="logoArea">
+    <div class="logo-name">Cinco Bakes</div>
+    <div class="logo-sub">Cookie Order Form</div>
+  </div>
+
+  <div class="page-indicator">
+    <div class="step active" id="step1">1</div>
+    <div class="step-line" id="line1"></div>
+    <div class="step" id="step2">2</div>
+    <div class="step-line" id="line2"></div>
+    <div class="step" id="step3">3</div>
+  </div>
+
+  <!-- PAGE 1 -->
+  <div class="page active" id="page1">
+    <div class="section-title">Your Details</div>
+    <div class="field">
+      <label>Full Name</label>
+      <input type="text" id="fullName" placeholder="e.g. Juan Dela Cruz" />
+      <div class="field-error" id="nameError">Please enter your full name.</div>
+    </div>
+    <div class="field">
+      <label>Instagram Handle</label>
+      <input type="text" id="instagram" placeholder="e.g. @juandelacruz" />
+      <div class="field-error" id="instagramError">Please enter your Instagram handle.</div>
+    </div>
+    <div class="section-title" style="margin-top:1.5rem;">Choose Your Cookies</div>
+    <div class="cookie-list" id="cookieList">
+      <div style="text-align:center; color:#a07850; font-size:18px; padding:2rem;">Loading menu...</div>
+    </div>
+    <div class="total-bar">
+      <div>
+        <div class="total-label">Subtotal</div>
+        <div class="item-count" id="item-count">0 cookies</div>
+      </div>
+      <div class="total-amount" id="total">₱0.00</div>
+    </div>
+    <button class="primary" onclick="goToPage2()">Next →</button>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div class="page" id="page2">
+    <div class="section-title">Payment & Delivery</div>
+    <div class="field">
+      <label>Date of Delivery</label>
+      <input type="date" id="dateOfDelivery" onchange="formatDate(this)" />
+      <div id="dateDisplay" style="font-size:18px; color:#a07850; margin-top:6px;"></div>
+      <div id="dateError" style="display:none; font-size:16px; color:#c0502a; margin-top:4px;">Please select a Saturday or Sunday only.</div>
+      <div class="field-error" id="deliveryError">Please select a delivery date.</div>
+    </div>
+    <div class="field">
+      <label>Delivery Area</label>
+      <select id="deliveryArea" onchange="onDeliveryAreaChange(this.value)">
+        <option value="">Select your delivery area</option>
+        <option value="Calamba">Calamba — +₱25.00 delivery fee</option>
+        <option value="Los Baños">Los Baños — Free delivery</option>
+        <option value="Bay">Bay — +₱15.00 delivery fee</option>
+        <option value="Others">Others — Specify your location</option>
+      </select>
+      <div class="field-error" id="areaError">Please select a delivery area.</div>
+    </div>
+    <div class="field" id="locationField" style="display:none;">
+      <label id="locationLabel">Meetup Location</label>
+      <input type="text" id="deliveryLocation" placeholder="" />
+      <div class="fee-note" id="locationNote" style="display:none;">📋 Delivery fee will be based on your specified location and will be confirmed before your order is finalized.</div>
+      <div class="field-error" id="locationError">Please specify your location.</div>
+    </div>
+    <div class="fee-display" id="feeDisplay" style="display:none;">
+      <span class="fee-display-label">Delivery Fee: </span>
+      <span class="fee-display-amount" id="feeAmount"></span>
+    </div>
+    <div class="field">
+      <label>Mode of Payment</label>
+      <select id="modeOfPayment" onchange="onPaymentChange(this.value)">
+        <option value="">Select payment method</option>
+        <option value="GCash">GCash</option>
+        <option value="Cash">Cash on Delivery</option>
+      </select>
+      <div class="field-error" id="paymentError">Please select a payment method.</div>
+    </div>
+    <button class="primary" id="page2-btn" onclick="onPage2Btn()">Next →</button>
+    <button class="secondary" onclick="goToPage1()">← Back</button>
+  </div>
+
+  <!-- PAGE 3 -->
+  <div class="page" id="page3">
+    <div class="section-title">Order Summary</div>
+    <div class="summary" id="finalSummary">
+      <div class="summary-row"><span class="summary-label">Name</span><span class="summary-value" id="summaryName"></span></div>
+      <div class="summary-row"><span class="summary-label">Instagram</span><span class="summary-value" id="summaryInstagram"></span></div>
+      <div class="summary-row"><span class="summary-label">Delivery Area</span><span class="summary-value" id="summaryArea"></span></div>
+      <div class="summary-row"><span class="summary-label">Meetup Location</span><span class="summary-value" id="summaryLocation"></span></div>
+      <div class="summary-row"><span class="summary-label">Date of Delivery</span><span class="summary-value" id="summaryDate"></span></div>
+      <div class="summary-row"><span class="summary-label">Payment</span><span class="summary-value" id="summaryPayment"></span></div>
+      <hr class="summary-divider">
+      <div style="font-size:16px; color:#cbb89a; margin-bottom:6px; font-weight:500;">Order Items</div>
+      <div id="summaryItems"></div>
+      <hr class="summary-divider">
+      <div class="summary-row"><span class="summary-label" style="color:#cbb89a;">Subtotal</span><span class="summary-value" id="summarySubtotal"></span></div>
+      <div class="summary-row"><span class="summary-label" style="color:#cbb89a;">Delivery Fee</span><span class="summary-value" id="summaryDeliveryFee"></span></div>
+      <hr class="summary-divider">
+      <div class="summary-total-row"><span class="summary-total-label">Total</span><span class="summary-total-value" id="summaryTotal"></span></div>
+    </div>
+    <div id="gcashSection" style="display:none;">
+      <div class="section-title" style="margin-top:1.5rem;">GCash Payment</div>
+      <div class="gcash-amount" id="gcashAmount"></div>
+      <div class="gcash-note">Scan the QR code below to pay.<br>Use your <strong>Full Name</strong> as the GCash reference/note.</div>
+      <div style="margin: 1.5rem 0;" id="gcashQrContainer"></div>
+    </div>
+    <div class="instagram-note">
+      <div class="instagram-note-title">📸 Important Note</div>
+      <div class="instagram-note-text">Please take a screenshot of this page and send it to our Instagram for order confirmation.<br><br>
+      <a href="https://www.instagram.com/cinco.bakes" target="_blank" class="instagram-note-link">@cinco.bakes</a></div>
+    </div>
+    <button class="primary" id="submit-btn" onclick="submitOrder()">Place Order</button>
+    <div id="success-msg" class="msg success"></div>
+    <div id="error-msg" class="msg error"></div>
+    <button class="secondary" onclick="goToPage2FromSummary()">← Back</button>
+  </div>
+
+  <!-- THANK YOU PAGE -->
+  <div class="page" id="pageDone">
+    <div style="text-align:center; padding: 2rem 1rem;">
+      <div style="font-size:72px; margin-bottom:1rem;">🍪</div>
+      <div style="font-size:36px; font-weight:700; color:#442523; margin-bottom:0.5rem;">Thank You!</div>
+      <div style="font-size:20px; color:#a07850; margin-bottom:0.5rem;">Your order has been placed successfully.</div>
+      <div style="font-size:18px; color:#cbb89a; margin-bottom:2rem;">We'll reach out to you shortly to confirm your order. 😊</div>
+      <button class="primary" style="max-width:400px; margin:0 auto;" onclick="resetForm()">Order Again 🍪</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// CONFIGURATION
+// ============================================================
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzB4hBYSkXpo1bmVb4c2__UcKEz6_h4xa5AAHq9Hdtv-2kjUsjKPJzbaVjzgzC4duNfPw/exec';
+
+// ============================================================
+// STATE
+// ============================================================
+var cart = {};
+var currentPayment = '';
+var deliveryFee = 0;
+var deliveryFeeKnown = false;
+var deliveryFees = { 'Calamba': 25, 'Los Baños': 0, 'Bay': 15 };
+var menuData = []; // loaded from Apps Script
+var gcashQrUrl = null;
+var logoUrl = null;
+
+// ============================================================
+// LOAD MENU ON PAGE LOAD
+// ============================================================
+window.addEventListener('load', function() {
+  loadMenu();
+});
+
+function loadMenu() {
+  document.getElementById('loadingOverlay').classList.add('active');
+
+  fetch(APPS_SCRIPT_URL + '?type=menu')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      menuData = data.cookies || [];
+      gcashQrUrl = data.gcashQrUrl || null;
+      logoUrl = data.logoUrl || null;
+
+      renderLogo(logoUrl);
+      renderCookies(menuData);
+      renderGcashQr(gcashQrUrl);
+
+      document.getElementById('loadingOverlay').classList.remove('active');
+    })
+    .catch(function() {
+      // Fallback: render hardcoded menu if fetch fails
+      menuData = [
+        { name: 'OG Choco Chip', price: 75, imageUrl: null },
+        { name: '2D Chocolate', price: 85, imageUrl: null },
+        { name: 'Rocky Red', price: 95, imageUrl: null },
+        { name: 'Nutty Boi', price: 95, imageUrl: null },
+        { name: 'Matcha Créme', price: 105, imageUrl: null },
+        { name: 'Assorted Box of 5', price: 415, imageUrl: null }
+      ];
+      renderCookies(menuData);
+      document.getElementById('loadingOverlay').classList.remove('active');
+    });
+}
+
+function renderLogo(url) {
+  if (!url) return;
+  var logoArea = document.getElementById('logoArea');
+  logoArea.innerHTML =
+    '<div style="text-align:center;">' +
+      '<div style="display:inline-flex; align-items:center; justify-content:center; gap:16px;">' +
+        '<img src="' + url + '" alt="Cinco Bakes" style="width:80px; height:80px; object-fit:contain; flex-shrink:0;" />' +
+        '<div style="font-family:Montserrat,sans-serif; font-size:56px; font-weight:700; color:#442523; letter-spacing:1px; line-height:1;">Cinco Bakes</div>' +
+      '</div>' +
+      '<div style="font-family:Montserrat,sans-serif; font-size:30px; letter-spacing:4px; color:#a07850; text-transform:uppercase; margin-top:6px; font-weight:500;">Cookie Order Form</div>' +
+    '</div>';
+}
+
+function renderCookies(cookies) {
+  var html = '';
+  cookies.forEach(function(c) {
+    var isBox = c.name.toLowerCase().includes('box');
+    var priceDisplay = isBox
+      ? '<span class="sale-old">₱455.00</span> <span class="sale-new">₱' + c.price.toLocaleString() + '.00</span>'
+      : '₱' + c.price.toLocaleString() + '.00 each';
+    var badge = isBox ? '<span class="sale-badge">SALE</span>' : '';
+    var safeId = c.name.replace(/\s+/g, '');
+    var imgHTML = c.imageUrl ? '<img src="' + c.imageUrl + '" alt="' + c.name + '" class="cookie-img" />' : '';
+    html +=
+      '<div class="cookie-row">' + imgHTML +
+        '<div class="cookie-info">' +
+          '<div class="cookie-name">' + c.name + ' ' + badge + '</div>' +
+          '<div class="cookie-price">' + priceDisplay + '</div>' +
+        '</div>' +
+        '<div class="stepper">' +
+          '<button type="button" onclick="change(\'' + c.name + '\', ' + c.price + ', -1)">−</button>' +
+          '<span class="qty" id="qty-' + safeId + '">0</span>' +
+          '<button type="button" onclick="change(\'' + c.name + '\', ' + c.price + ', 1)">+</button>' +
+        '</div>' +
+      '</div>';
+  });
+  document.getElementById('cookieList').innerHTML = html;
+}
+
+function renderGcashQr(url) {
+  if (!url) return;
+  gcashQrUrl = url;
+}
+
+// ============================================================
+// CART
+// ============================================================
+function change(name, price, delta) {
+  if (!cart[name]) cart[name] = { qty: 0, price: price };
+  cart[name].qty = Math.max(0, cart[name].qty + delta);
+  var id = name.replace(/\s+/g, '');
+  document.getElementById('qty-' + id).textContent = cart[name].qty;
+  updateSummary();
+}
+
+function updateSummary() {
+  var subtotal = 0, cookies = 0, boxes = 0;
+  Object.entries(cart).forEach(function(e) {
+    var name = e[0]; var c = e[1];
+    subtotal += c.qty * c.price;
+    if (name.toLowerCase().includes('box')) boxes += c.qty;
+    else cookies += c.qty;
+  });
+  document.getElementById('total').textContent = '₱' + subtotal.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+  var parts = [];
+  if (cookies > 0) parts.push(cookies + (cookies === 1 ? ' cookie' : ' cookies'));
+  if (boxes > 0) parts.push(boxes + (boxes === 1 ? ' box' : ' boxes'));
+  document.getElementById('item-count').textContent = parts.length > 0 ? parts.join(', ') : '0 cookies';
+}
+
+function getSubtotal() {
+  var subtotal = 0;
+  Object.values(cart).forEach(function(c) { subtotal += c.qty * c.price; });
+  return subtotal;
+}
+
+// ============================================================
+// DELIVERY
+// ============================================================
+function onDeliveryAreaChange(value) {
+  var locationField = document.getElementById('locationField');
+  var locationLabel = document.getElementById('locationLabel');
+  var locationNote = document.getElementById('locationNote');
+  var feeDisplay = document.getElementById('feeDisplay');
+  var feeAmount = document.getElementById('feeAmount');
+  document.getElementById('areaError').classList.remove('show');
+  if (value === 'Others') {
+    locationField.style.display = 'block';
+    locationLabel.textContent = 'Specify Your Location';
+    locationNote.style.display = 'block';
+    document.getElementById('deliveryLocation').placeholder = 'e.g. Cabuyao, Laguna';
+    feeDisplay.style.display = 'none';
+    deliveryFee = 0;
+    deliveryFeeKnown = false;
+  } else if (value !== '') {
+    locationField.style.display = 'block';
+    locationLabel.textContent = 'Meetup Location';
+    locationNote.style.display = 'none';
+    document.getElementById('deliveryLocation').placeholder = 'e.g. Robinsons ' + value;
+    document.getElementById('deliveryLocation').value = '';
+    deliveryFee = deliveryFees[value];
+    deliveryFeeKnown = true;
+    feeDisplay.style.display = 'block';
+    if (deliveryFee === 0) {
+      feeAmount.innerHTML = '<span style="color:#2e7d32; font-weight:700;">FREE</span>';
+    } else {
+      feeAmount.textContent = '₱' + deliveryFee.toFixed(2);
+    }
+  } else {
+    locationField.style.display = 'none';
+    feeDisplay.style.display = 'none';
+    deliveryFee = 0;
+    deliveryFeeKnown = false;
+  }
+}
+
+function onPaymentChange(value) {
+  currentPayment = value;
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function goToPage2() {
+  var fullName = document.getElementById('fullName').value.trim();
+  var instagram = document.getElementById('instagram').value.trim();
+  var valid = true;
+  if (!fullName) { document.getElementById('nameError').classList.add('show'); valid = false; }
+  else { document.getElementById('nameError').classList.remove('show'); }
+  if (!instagram) { document.getElementById('instagram').classList.add('invalid'); document.getElementById('instagramError').classList.add('show'); valid = false; }
+  else { document.getElementById('instagram').classList.remove('invalid'); document.getElementById('instagramError').classList.remove('show'); }
+  var ordered = Object.entries(cart).filter(function(e) { return e[1].qty > 0; });
+  if (ordered.length === 0) { alert('Please select at least one cookie!'); valid = false; }
+  if (!valid) return;
+  var today = new Date().toISOString().split('T')[0];
+  document.getElementById('dateOfDelivery').setAttribute('min', today);
+  document.getElementById('page1').classList.remove('active');
+  document.getElementById('page2').classList.add('active');
+  document.getElementById('step1').classList.remove('active');
+  document.getElementById('step1').classList.add('done');
+  document.getElementById('step1').textContent = '✓';
+  document.getElementById('line1').classList.add('done');
+  document.getElementById('step2').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goToPage1() {
+  document.getElementById('page2').classList.remove('active');
+  document.getElementById('page1').classList.add('active');
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('step1').classList.remove('done');
+  document.getElementById('step1').textContent = '1';
+  document.getElementById('line1').classList.remove('done');
+  document.getElementById('step2').classList.remove('active');
+  window.scrollTo(0, 0);
+}
+
+function formatDate(input) {
+  if (input.value) {
+    var d = new Date(input.value + 'T00:00:00');
+    var day = d.getDay();
+    if (day !== 0 && day !== 6) {
+      input.value = '';
+      input.removeAttribute('data-formatted');
+      document.getElementById('dateDisplay').textContent = '';
+      document.getElementById('dateError').style.display = 'block';
+      return;
+    }
+    document.getElementById('dateError').style.display = 'none';
+    var formatted = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' });
+    document.getElementById('dateDisplay').textContent = formatted;
+    input.setAttribute('data-formatted', formatted);
+    document.getElementById('deliveryError').classList.remove('show');
+  }
+}
+
+function onPage2Btn() {
+  var modeOfPayment = document.getElementById('modeOfPayment').value;
+  var dateInput = document.getElementById('dateOfDelivery');
+  var dateOfDelivery = dateInput.getAttribute('data-formatted') || dateInput.value;
+  var area = document.getElementById('deliveryArea').value;
+  var location = document.getElementById('deliveryLocation').value.trim();
+  var valid = true;
+  if (!dateOfDelivery) { document.getElementById('deliveryError').classList.add('show'); valid = false; }
+  else { document.getElementById('deliveryError').classList.remove('show'); }
+  if (!area) { document.getElementById('areaError').classList.add('show'); valid = false; }
+  else { document.getElementById('areaError').classList.remove('show'); }
+  if (area !== '' && !location) { document.getElementById('locationError').classList.add('show'); valid = false; }
+  else { document.getElementById('locationError').classList.remove('show'); }
+  if (!modeOfPayment) { document.getElementById('paymentError').classList.add('show'); valid = false; }
+  else { document.getElementById('paymentError').classList.remove('show'); }
+  if (!valid) return;
+  buildFinalSummary();
+  document.getElementById('page2').classList.remove('active');
+  document.getElementById('page3').classList.add('active');
+  document.getElementById('step2').classList.remove('active');
+  document.getElementById('step2').classList.add('done');
+  document.getElementById('step2').textContent = '✓';
+  document.getElementById('line2').classList.add('done');
+  document.getElementById('step3').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function buildFinalSummary() {
+  var fullName = document.getElementById('fullName').value.trim();
+  var instagram = document.getElementById('instagram').value.trim();
+  var area = document.getElementById('deliveryArea').value;
+  var location = document.getElementById('deliveryLocation').value.trim();
+  var dateInput = document.getElementById('dateOfDelivery');
+  var dateOfDelivery = dateInput.getAttribute('data-formatted') || dateInput.value;
+  var modeOfPayment = document.getElementById('modeOfPayment').value;
+  var subtotal = getSubtotal();
+  var total = subtotal + (deliveryFeeKnown ? deliveryFee : 0);
+  document.getElementById('summaryName').textContent = fullName;
+  document.getElementById('summaryInstagram').textContent = instagram;
+  document.getElementById('summaryArea').textContent = area;
+  document.getElementById('summaryLocation').textContent = location || '—';
+  document.getElementById('summaryDate').textContent = dateOfDelivery;
+  document.getElementById('summaryPayment').textContent = modeOfPayment;
+  var ordered = Object.entries(cart).filter(function(e) { return e[1].qty > 0; });
+  var itemsHTML = '';
+  ordered.forEach(function(e) {
+    var sub = e[1].qty * e[1].price;
+    itemsHTML += '<div class="summary-item">• ' + e[0] + ' x' + e[1].qty + ' = ₱' + sub.toLocaleString('en-PH') + '</div>';
+  });
+  document.getElementById('summaryItems').innerHTML = itemsHTML;
+  document.getElementById('summarySubtotal').textContent = '₱' + subtotal.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+  document.getElementById('summaryDeliveryFee').textContent = deliveryFeeKnown ? (deliveryFee === 0 ? 'FREE' : '₱' + deliveryFee.toFixed(2)) : 'To be determined';
+  document.getElementById('summaryTotal').textContent = '₱' + total.toLocaleString('en-PH', { minimumFractionDigits: 2 }) + (deliveryFeeKnown ? '' : ' + delivery fee');
+  if (modeOfPayment === 'GCash') {
+    document.getElementById('gcashSection').style.display = 'block';
+    document.getElementById('gcashAmount').textContent = 'Amount: ₱' + total.toLocaleString('en-PH', { minimumFractionDigits: 2 }) + (deliveryFeeKnown ? '' : ' + delivery fee');
+    var qrContainer = document.getElementById('gcashQrContainer');
+    if (gcashQrUrl) {
+      qrContainer.innerHTML = '<img src="' + gcashQrUrl + '" alt="GCash QR Code" style="width:min(520px,85vw); height:min(520px,85vw); object-fit:contain; display:block; margin:0 auto;" />';
+    } else {
+      qrContainer.innerHTML = '<div style="text-align:center; color:#a07850; font-size:18px;">QR Code not available</div>';
+    }
+  } else {
+    document.getElementById('gcashSection').style.display = 'none';
+  }
+}
+
+function goToPage2FromSummary() {
+  document.getElementById('page3').classList.remove('active');
+  document.getElementById('page2').classList.add('active');
+  document.getElementById('step2').classList.add('active');
+  document.getElementById('step2').classList.remove('done');
+  document.getElementById('step2').textContent = '2';
+  document.getElementById('line2').classList.remove('done');
+  document.getElementById('step3').classList.remove('active');
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// SUBMIT ORDER
+// ============================================================
+function submitOrder() {
+  var fullName = document.getElementById('fullName').value.trim();
+  var instagram = document.getElementById('instagram').value.trim();
+  var modeOfPayment = document.getElementById('modeOfPayment').value;
+  var dateInput = document.getElementById('dateOfDelivery');
+  var dateOfDelivery = dateInput.getAttribute('data-formatted') || dateInput.value;
+  var deliveryArea = document.getElementById('deliveryArea').value;
+  var deliveryLocation = document.getElementById('deliveryLocation').value.trim();
+  var ordered = Object.entries(cart).filter(function(e) { return e[1].qty > 0; });
+  var subtotal = 0;
+  var order = ordered.map(function(e) {
+    subtotal += e[1].qty * e[1].price;
+    return { name: e[0], qty: e[1].qty, price: e[1].price };
+  });
+  var payload = {
+    fullName: fullName,
+    instagram: instagram,
+    modeOfPayment: modeOfPayment,
+    dateOfDelivery: dateOfDelivery,
+    deliveryArea: deliveryArea,
+    deliveryLocation: deliveryLocation,
+    order: order,
+    subtotal: subtotal
+  };
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+  document.getElementById('error-msg').style.display = 'none';
+
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(function() {
+    document.getElementById('page3').classList.remove('active');
+    document.getElementById('pageDone').classList.add('active');
+    window.scrollTo(0, 0);
+  })
+  .catch(function() {
+    document.getElementById('error-msg').style.display = 'block';
+    document.getElementById('error-msg').textContent = 'Something went wrong. Please try again.';
+    btn.disabled = false;
+    btn.textContent = 'Place Order';
+  });
+}
+
+// ============================================================
+// RESET
+// ============================================================
+function resetForm() {
+  cart = {};
+  currentPayment = '';
+  deliveryFee = 0;
+  deliveryFeeKnown = false;
+  document.getElementById('fullName').value = '';
+  document.getElementById('instagram').value = '';
+  document.getElementById('dateOfDelivery').value = '';
+  document.getElementById('dateDisplay').textContent = '';
+  document.getElementById('deliveryArea').value = '';
+  document.getElementById('deliveryLocation').value = '';
+  document.getElementById('modeOfPayment').value = '';
+  document.getElementById('locationField').style.display = 'none';
+  document.getElementById('feeDisplay').style.display = 'none';
+  document.getElementById('gcashSection').style.display = 'none';
+  document.getElementById('error-msg').style.display = 'none';
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('submit-btn').textContent = 'Place Order';
+  document.getElementById('page2-btn').disabled = false;
+  document.getElementById('page2-btn').textContent = 'Next →';
+  var qtyEls = document.querySelectorAll('.qty');
+  qtyEls.forEach(function(el) { el.textContent = '0'; });
+  document.getElementById('total').textContent = '₱0.00';
+  document.getElementById('item-count').textContent = '0 cookies';
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('step1').classList.remove('done');
+  document.getElementById('step1').textContent = '1';
+  document.getElementById('step2').classList.remove('active');
+  document.getElementById('step2').classList.remove('done');
+  document.getElementById('step2').textContent = '2';
+  document.getElementById('step3').classList.remove('active');
+  document.getElementById('step3').textContent = '3';
+  document.getElementById('line1').classList.remove('done');
+  document.getElementById('line2').classList.remove('done');
+  document.getElementById('pageDone').classList.remove('active');
+  document.getElementById('page1').classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
